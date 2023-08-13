@@ -1,5 +1,5 @@
 # Cert-manager
-* Documentation: https://cert-manager.io/docs/installation/helm/
+📓Documentation: https://cert-manager.io/docs/installation/helm/
 
 ## Add the helm chart repo
 ```bash
@@ -35,7 +35,8 @@ helm upgrade -i cert-manager jetstack/cert-manager \
 
 ## Apply the ClusterIssuer manifest
 
-### before apply change the e-mail on the line 10 of this manifest bellow
+⚠️before apply change the e-mail on the line 10 of this manifest bellow
+
 ```bash
 kubectl apply -f ./letsencrypt-clusterissuer.yaml
 ```
