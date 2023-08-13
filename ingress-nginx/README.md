@@ -1,5 +1,5 @@
 # Ingress-nginx Controller 
-* Documentation: https://github.com/kubernetes/ingress-nginx
+📓Documentation: https://github.com/kubernetes/ingress-nginx
 
 ## Add the helm chart repo
 ```bash
