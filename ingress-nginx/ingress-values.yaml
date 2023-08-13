@@ -1,0 +1,164 @@
+controller:
+  config: 
+    use-forwarded-headers: "true"
+    allow-snippet-annotations: "true"
+    log-format-escape-json: "true"
+    log-format-upstream: '{ "@timestamp": "$time_iso8601", "remote_addr": "$remote_addr",
+      "x-forward-for": "$proxy_add_x_forwarded_for", "request_id": "$req_id", "remote_user":
+      "$remote_user", "bytes_sent": "$bytes_sent", "request_time": "$request_time",
+      "status": "$status", "vhost": "$host", "request_proto": "$server_protocol", "path":
+      "$uri", "request_query": "$args", "request_length": "$request_length", "duration":
+      "$request_time", "method": "$request_method", "http_referrer": "$http_referer",
+      "http_user_agent": "$http_user_agent" }'
+  admissionWebhooks:
+    enabled: false
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 12
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 50
+    behavior: 
+      scaleDown:
+        stabilizationWindowSeconds: 300
+        policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 180
+  ingressClassResource:
+    name: nginx
+    enabled: true
+    default: true
+    controllerValue: "k8s.io/ingress-nginx"
+  ingressClass: nginx
+  tcp:
+    # -- Allows customization of the tcp-services-configmap; defaults to $(POD_NAMESPACE)
+    configMapNamespace: ""
+  udp:
+    # -- Allows customization of the udp-services-configmap; defaults to $(POD_NAMESPACE)
+    # configMapNamespace: ""
+  replicaCount: 3
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  # affinity: 
+  #   nodeAffinity:
+  #       requiredDuringSchedulingIgnoredDuringExecution:
+  #         nodeSelectorTerms:
+  #         - matchExpressions:
+  #           - key: key-name
+  #             operator: In
+  #             values:
+  #             - key-value
+  #       preferredDuringSchedulingIgnoredDuringExecution:
+  #       - weight: 1
+  #         preference:
+  #           matchExpressions:
+  #           - key: key-name
+  #             operator: In
+  #             values:
+  #             - key-value
+  service:
+    type: LoadBalancer
+    externalTrafficPolicy: "Local"
+    annotations: {
+        # To AWS (Amazon Web Service)
+        # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp",
+        # service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true",
+        # service.beta.kubernetes.io/aws-load-balancer-type: "nlb",
+        # service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "evironment=dev,project=company-or-project-name,ManagedBy=kubernetes"
+        # # To OCI (Oracle Infraestructure Cloud) see more here:https://github.com/oracle/oci-cloud-controller-manager/blob/master/docs/load-balancer-annotations.md
+        oci.oraclecloud.com/load-balancer-type: "lb",
+        service.beta.kubernetes.io/oci-load-balancer-shape: "flexible",
+        service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10",
+        service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "100",
+        service.beta.kubernetes.io/oci-load-balancer-subnet1: "ocid",
+        service.beta.kubernetes.io/oci-load-balancer-subnet2: "ocid" 
+    }
+    external:
+      enabled: true
+      
+    internal:
+      # -- Enables an additional internal load balancer (besides the external one).
+      enabled: false
+      # -- Annotations are mandatory for the load balancer to come up. Varies with the cloud service.
+      annotations: {}
+        # # To AWS (Amazon Web Service) https://cloud-provider-aws.sigs.k8s.io/service_controller/
+        # service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+        # # To GCP (Google Cloud Platform)
+        # networking.gke.io/load-balancer-type: "Internal"
+        # networking.gke.io/internal-load-balancer-allow-global-access: "true"
+        # # To OCI (Oracle Infraestructure Cloud)
+        # service.beta.kubernetes.io/oci-load-balancer-internal: "true"
+        # service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
+        # service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
+        # service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "100"
+  stats:
+    enabled: true
+  metrics:
+    port: 10254
+    portName: metrics
+    enabled: true
+    service:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "10254"
+    serviceMonitor:
+      enabled: false
+      additionalLabels: {}
+      namespace: ""
+      namespaceSelector: {}
+      scrapeInterval: 30s
+      targetLabels: []
+      relabelings: []
+      metricRelabelings: []
+
+    prometheusRule:
+      enabled: false
+
+# -- TCP service key-value pairs
+## Ref: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/exposing-tcp-udp-services.md
+##
+# tcp: {
+#  22: "gitlab/gitlab:22"
+# }
+
+# -- UDP service key-value pairs
+## Ref: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/exposing-tcp-udp-services.md
+##
+udp: {}
+#  53: "kube-system/kube-dns:53"
+
+# If Node has labels and makes sense put Selectors to Nodes based on a key value of label in a node
+# defaultBackend:
+#   affinity: 
+#     nodeAffinity:
+#         requiredDuringSchedulingIgnoredDuringExecution:
+#           nodeSelectorTerms:
+#           - matchExpressions:
+#             - key: key_name
+#               operator: In
+#               values:
+#               - key-value
+#         preferredDuringSchedulingIgnoredDuringExecution:
+#         - weight: 1
+#           preference:
+#             matchExpressions:
+#             - key: key_name
+#               operator: In
+#               values:
+#               - key-value
+  # tolerations:
+  #   - effect: NoSchedule
+  #     key: key_name
+  #     operator: Equal
+  #     value: key-value
+  replicaCount: 3
+  resources:
+    limits:
+      cpu: 50m
+      memory: 64Mi
